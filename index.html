@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-br" oncontextmenu="return false;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUQUE DE DEZENAS COMBINADOS NOS BICHOS</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e74c3c;
+            --gold: #f1c40f;
+            --dark: #1a252f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none; /* Bloqueia seleção de texto */
+        }
+
+        #login-screen {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #app-content { display: none; width: 100%; max-width: 600px; }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--primary); font-size: 1.4rem; text-align: center; margin-bottom: 20px; }
+
+        /* Estilo Sugestões Diárias */
+        .daily-box {
+            background: var(--dark);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 5px solid var(--gold);
+        }
+        .daily-items { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: var(--gold); }
+
+        .grid-bichos {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .bicho-item {
+            padding: 10px 2px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8rem;
+            background: #fff;
+            transition: 0.2s;
+        }
+
+        .bicho-item.selected {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .conferidor-grid {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .conferidor-grid input {
+            width: 55px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .resumo-premios {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-generate { background: var(--secondary); color: white; flex: 2; }
+        .btn-clear { background: var(--accent); color: white; }
+        .btn-share { background: #3498db; color: white; }
+
+        #resultados {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+
+        .jogo-card {
+            background: #fff;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .hit-2 {
+            background-color: var(--gold) !important;
+            border: 2px solid #b7950b !important;
+            text-decoration: underline !important;
+            font-weight: bold !important;
+            color: #000;
+        }
+
+        footer {
+            margin: 40px 0;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body onkeydown="return disableKeys(event)">
+
+    <div id="login-screen">
+        <h2>Acesso Protegido</h2>
+        <input type="password" id="pass-input" placeholder="Digite a senha" style="padding: 12px; text-align: center; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc;"><br>
+        <button onclick="checkPass()" class="btn-generate" style="width: 200px;">Entrar</button>
+    </div>
+
+    <div id="app-content">
+        <div class="daily-box">
+            <div>💡 PALPITES DO DIA (Válido até 00:00)</div>
+            <div id="dailySuggestions" class="daily-items"></div>
+        </div>
+
+        <div class="container">
+            <h1>DUQUE DE DEZENAS COMBINADOS NOS BICHOS</h1>
+            
+            <div class="grid-bichos" id="gridBichos"></div>
+
+            <div class="conferidor-grid">
+                <input type="number" class="sorteada" placeholder="00" oninput="conferirAoDigitar(this)">
+                <input type="number" class="sorteada" placeholder="00" oninput="conferirAoDigitar(this)">
+                <input type="number" class="sorteada" placeholder="00" oninput="conferirAoDigitar(this)">
+                <input type="number" class="sorteada" placeholder="00" oninput="conferirAoDigitar(this)">
+                <input type="number" class="sorteada" placeholder="00" oninput="conferirAoDigitar(this)">
+            </div>
+
+            <div id="resumoPremios" class="resumo-premios"></div>
+
+            <div class="btn-group">
+                <button class="btn-clear" onclick="limpar()">Limpar</button>
+                <button class="btn-generate" onclick="gerarDesdobramento()">Gerar Jogos</button>
+                <button class="btn-share" onclick="compartilhar()">WhatsApp</button>
+            </div>
+        </div>
+
+        <div id="resultados"></div>
+
+        <footer>
+            Criado por <strong>Guinho Do Bicho</strong>
+        </footer>
+    </div>
+
+<script>
+    // BLOQUEIO DE TECLAS (F12, Ctrl+U, Ctrl+Shift+I)
+    function disableKeys(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
+            (e.ctrlKey && e.keyCode == 85)) {
+            return false;
+        }
+    }
+
+    const bichos = ["Avestruz 🦅", "Águia 🦅", "Burro 🫏", "Borboleta 🦋", "Cachorro 🐕", "Cabra 🐐", "Carneiro 🐏", "Camelo 🐪", "Cobra 🐍", "Coelho 🐇", "Cavalo 🐎", "Elefante 🐘", "Galo 🐓", "Gato 🐈", "Jacaré 🐊", "Leão 🦁", "Macaco 🐒", "Porco 🐖", "Pavão 🦚", "Peru 🦃", "Touro 🐂", "Tigre 🐅", "Urso 🐻", "Veado 🦌", "Vaca 🐄"];
+    let selecionados = [];
+    const matrix = [[0,1,2],[3,4,5],[6,7,8],[9,10,11],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[1,5,6],[2,3,7],[0,5,7],[1,3,8],[2,4,6],[9,0,1],[9,2,3],[9,4,5],[9,6,7],[9,8,10],[10,0,2],[10,3,4],[11,0,3],[11,1,2]];
+
+    // PERSISTÊNCIA DE LOGIN
+    function checkPass() {
+        if(document.getElementById('pass-input').value === '484646') {
+            localStorage.setItem('guinho_auth_token', 'active_session');
+            initApp();
+        } else { alert('Senha Incorreta!'); }
+    }
+
+    window.onload = () => { 
+        if(localStorage.getItem('guinho_auth_token') === 'active_session') {
+            initApp();
+        }
+    };
+
+    function initApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        renderGrid();
+        generateDailyTips();
+    }
+
+    // LÓGICA DE BICHOS DIÁRIOS (Muda à meia-noite)
+    function generateDailyTips() {
+        const dateSeed = new Date().toISOString().slice(0, 10).replace(/-/g, ""); 
+        let seed = parseInt(dateSeed);
+        
+        let tips = [];
+        let available = [...bichos];
+        
+        for(let i=0; i<3; i++) {
+            // Pseudo-random baseado na data
+            seed = (seed * 9301 + 49297) % 233280;
+            let index = Math.floor((seed / 233280) * available.length);
+            tips.push(available.splice(index, 1)[0]);
+        }
+        
+        document.getElementById('dailySuggestions').innerHTML = tips.join(" | ");
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('gridBichos');
+        grid.innerHTML = '';
+        bichos.forEach((bicho, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'bicho-item';
+            btn.innerHTML = `<b>${i+1}</b><br>${bicho.split(' ')[1]}`;
+            btn.onclick = () => {
+                if(selecionados.includes(i)) {
+                    selecionados = selecionados.filter(idx => idx !== i);
+                    btn.classList.remove('selected');
+                } else if(selecionados.length < 3) {
+                    selecionados.push(i);
+                    btn.classList.add('selected');
+                }
+            };
+            grid.appendChild(btn);
+        });
+    }
+
+    function conferirAoDigitar(el) {
+        if(el.value.length > 2) el.value = el.value.slice(0,2);
+        atualizarDestaques();
+    }
+
+    function gerarDesdobramento() {
+        if(selecionados.length < 3) return alert("Selecione 3 grupos!");
+        
+        let dezenas = [];
+        [...selecionados].sort((a,b)=>a-b).forEach(idx => {
+            let base = idx * 4;
+            for(let i=1; i<=4; i++) {
+                let n = (base + i) === 100 ? 0 : (base + i);
+                dezenas.push(n.toString().padStart(2, '0'));
+            }
+        });
+
+        const resDiv = document.getElementById('resultados');
+        resDiv.innerHTML = '';
+
+        matrix.forEach(comb => {
+            const jogo = [dezenas[comb[0]], dezenas[comb[1]], dezenas[comb[2]]];
+            const card = document.createElement('div');
+            card.className = 'jogo-card';
+            card.dataset.dezenas = jogo.join(',');
+            card.innerText = jogo.join(' - ');
+            resDiv.appendChild(card);
+        });
+
+        document.getElementById('resumoPremios').style.display = 'block';
+        atualizarDestaques();
+    }
+
+    function atualizarDestaques() {
+        const sorteadas = Array.from(document.querySelectorAll('.sorteada'))
+                               .map(i => i.value.padStart(2, '0'))
+                               .filter(v => v !== "00" || (v === "00" && i.value !== ""));
+
+        let totalDuques = 0;
+        const cards = document.querySelectorAll('.jogo-card');
+
+        cards.forEach(card => {
+            const jogo = card.dataset.dezenas.split(',');
+            let acertos = jogo.filter(n => sorteadas.includes(n)).length;
+
+            if(acertos >= 2) {
+                card.classList.add('hit-2');
+                totalDuques++;
+            } else {
+                card.classList.remove('hit-2');
+            }
+        });
+
+        document.getElementById('resumoPremios').innerHTML = `🏆 TOTAL DE DUQUES PREMIADOS: ${totalDuques}`;
+    }
+
+    function limpar() {
+        selecionados = [];
+        document.querySelectorAll('.bicho-item').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('.sorteada').forEach(el => el.value = '');
+        document.getElementById('resultados').innerHTML = '';
+        document.getElementById('resumoPremios').style.display = 'none';
+    }
+
+    function compartilhar() {
+        const cards = document.querySelectorAll('.jogo-card');
+        if(cards.length === 0) return;
+        let texto = "*DUQUE DE DEZENAS COMBINADOS*\n*Criado por Guinho Do Bicho*\n\n";
+        cards.forEach((c, i) => {
+            let marca = c.classList.contains('hit-2') ? "✅ " : "⚪ ";
+            texto += `${marca}Jogo ${i+1}: ${c.innerText}\n`;
+        });
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+    }
+</script>
+</body>
+</html>
