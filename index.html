@@ -86,15 +86,12 @@
         .conferidor-grid input {
             width: 55px;
             height: 55px;
-            text-align: center; /* Centraliza o texto */
+            text-align: center;
             font-size: 1.3rem;
             font-weight: bold;
             border: 2px solid var(--primary);
             border-radius: 10px;
             background: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .resumo-premios {
@@ -105,7 +102,6 @@
             text-align: center;
             margin-bottom: 15px;
             font-weight: bold;
-            font-size: 1rem;
             display: none;
         }
 
@@ -202,27 +198,33 @@
     </div>
 
 <script>
-    // BLOQUEIO DE CÓDIGO FONTE
     function disableKeys(e) {
         if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) {
             return false;
         }
     }
 
-    const bichos = ["Avestruz 🦅", "Águia 🦅", "Burro 🫏", "Borboleta 🦋", "Cachorro 🐕", "Cabra 🐐", "Carneiro 🐏", "Camelo 🐪", "Cobra 🐍", "Coelho 🐇", "Cavalo 🐎", "Elefante 🐘", "Galo 🐓", "Gato 🐈", "Jacaré 🐊", "Leão 🦁", "Macaco 🐒", "Porco 🐖", "Pavão 🦚", "Peru 🦃", "Touro 🐂", "Tigre 🐅", "Urso 🐻", "Veado 🦌", "Vaca 🐄"];
+    // CORREÇÃO: Bicho 1 (Avestruz) e Bicho 2 (Águia) agora com emojis diferentes
+    const bichos = [
+        "Avestruz 🪿", "Águia 🦅", "Burro 🫏", "Borboleta 🦋", "Cachorro 🐕", 
+        "Cabra 🐐", "Carneiro 🐏", "Camelo 🐪", "Cobra 🐍", "Coelho 🐇", 
+        "Cavalo 🐎", "Elefante 🐘", "Galo 🐓", "Gato 🐈", "Jacaré 🐊", 
+        "Leão 🦁", "Macaco 🐒", "Porco 🐖", "Pavão 🦚", "Peru 🦃", 
+        "Touro 🐂", "Tigre 🐅", "Urso 🐻", "Veado 🦌", "Vaca 🐄"
+    ];
+
     let selecionados = [];
     const matrix = [[0,1,2],[3,4,5],[6,7,8],[9,10,11],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[1,5,6],[2,3,7],[0,5,7],[1,3,8],[2,4,6],[9,0,1],[9,2,3],[9,4,5],[9,6,7],[9,8,10],[10,0,2],[10,3,4],[11,0,3],[11,1,2]];
 
-    // SENHA PERSISTENTE
     function checkPass() {
         if(document.getElementById('pass-input').value === '484646') {
-            localStorage.setItem('guinho_auth_v4', 'logado');
+            localStorage.setItem('guinho_auth_v5', 'logado');
             initApp();
         } else { alert('Senha Incorreta!'); }
     }
 
     window.onload = () => { 
-        if(localStorage.getItem('guinho_auth_v4') === 'logado') initApp();
+        if(localStorage.getItem('guinho_auth_v5') === 'logado') initApp();
     };
 
     function initApp() {
@@ -294,9 +296,7 @@
         atualizarDestaques();
     }
 
-    // CORREÇÃO DO CONFERIDOR
     function atualizarDestaques() {
-        // Pega apenas os valores que NÃO estão vazios
         const inputs = Array.from(document.querySelectorAll('.sorteada'));
         const sorteadas = inputs
             .filter(i => i.value.trim() !== "") 
@@ -305,7 +305,6 @@
         let totalDuques = 0;
         const cards = document.querySelectorAll('.jogo-card');
 
-        // Se o conferidor estiver vazio, limpa destaques e zera o contador
         if (sorteadas.length === 0) {
             cards.forEach(card => card.classList.remove('hit-2'));
             document.getElementById('resumoPremios').innerHTML = `🏆 TOTAL DE DUQUES PREMIADOS: 0`;
