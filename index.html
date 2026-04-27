@@ -21,7 +21,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            user-select: none; /* Bloqueia seleção de texto */
+            user-select: none;
         }
 
         #login-screen {
@@ -43,9 +43,8 @@
             margin-bottom: 20px;
         }
 
-        h1 { color: var(--primary); font-size: 1.4rem; text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--primary); font-size: 1.4rem; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
 
-        /* Estilo Sugestões Diárias */
         .daily-box {
             background: var(--dark);
             color: #fff;
@@ -75,11 +74,7 @@
             transition: 0.2s;
         }
 
-        .bicho-item.selected {
-            background-color: var(--secondary);
-            color: white;
-            border-color: var(--secondary);
-        }
+        .bicho-item.selected { background-color: var(--secondary); color: white; border-color: var(--secondary); }
 
         .conferidor-grid {
             display: flex;
@@ -91,30 +86,30 @@
         .conferidor-grid input {
             width: 55px;
             height: 55px;
-            text-align: center;
+            text-align: center; /* Centraliza o texto */
             font-size: 1.3rem;
             font-weight: bold;
             border: 2px solid var(--primary);
             border-radius: 10px;
             background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .resumo-premios {
-            background: var(--primary);
+            background: var(--dark);
             color: white;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
             margin-bottom: 15px;
             font-weight: bold;
+            font-size: 1rem;
             display: none;
         }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
 
         button {
             padding: 15px;
@@ -207,11 +202,9 @@
     </div>
 
 <script>
-    // BLOQUEIO DE TECLAS (F12, Ctrl+U, Ctrl+Shift+I)
+    // BLOQUEIO DE CÓDIGO FONTE
     function disableKeys(e) {
-        if (e.keyCode == 123 || 
-            (e.ctrlKey && e.shiftKey && e.keyCode == 73) || 
-            (e.ctrlKey && e.keyCode == 85)) {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) {
             return false;
         }
     }
@@ -220,18 +213,16 @@
     let selecionados = [];
     const matrix = [[0,1,2],[3,4,5],[6,7,8],[9,10,11],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[1,5,6],[2,3,7],[0,5,7],[1,3,8],[2,4,6],[9,0,1],[9,2,3],[9,4,5],[9,6,7],[9,8,10],[10,0,2],[10,3,4],[11,0,3],[11,1,2]];
 
-    // PERSISTÊNCIA DE LOGIN
+    // SENHA PERSISTENTE
     function checkPass() {
         if(document.getElementById('pass-input').value === '484646') {
-            localStorage.setItem('guinho_auth_token', 'active_session');
+            localStorage.setItem('guinho_auth_v4', 'logado');
             initApp();
         } else { alert('Senha Incorreta!'); }
     }
 
     window.onload = () => { 
-        if(localStorage.getItem('guinho_auth_token') === 'active_session') {
-            initApp();
-        }
+        if(localStorage.getItem('guinho_auth_v4') === 'logado') initApp();
     };
 
     function initApp() {
@@ -241,21 +232,16 @@
         generateDailyTips();
     }
 
-    // LÓGICA DE BICHOS DIÁRIOS (Muda à meia-noite)
     function generateDailyTips() {
         const dateSeed = new Date().toISOString().slice(0, 10).replace(/-/g, ""); 
         let seed = parseInt(dateSeed);
-        
         let tips = [];
         let available = [...bichos];
-        
         for(let i=0; i<3; i++) {
-            // Pseudo-random baseado na data
             seed = (seed * 9301 + 49297) % 233280;
             let index = Math.floor((seed / 233280) * available.length);
             tips.push(available.splice(index, 1)[0]);
         }
-        
         document.getElementById('dailySuggestions').innerHTML = tips.join(" | ");
     }
 
@@ -286,7 +272,6 @@
 
     function gerarDesdobramento() {
         if(selecionados.length < 3) return alert("Selecione 3 grupos!");
-        
         let dezenas = [];
         [...selecionados].sort((a,b)=>a-b).forEach(idx => {
             let base = idx * 4;
@@ -295,10 +280,8 @@
                 dezenas.push(n.toString().padStart(2, '0'));
             }
         });
-
         const resDiv = document.getElementById('resultados');
         resDiv.innerHTML = '';
-
         matrix.forEach(comb => {
             const jogo = [dezenas[comb[0]], dezenas[comb[1]], dezenas[comb[2]]];
             const card = document.createElement('div');
@@ -307,23 +290,31 @@
             card.innerText = jogo.join(' - ');
             resDiv.appendChild(card);
         });
-
         document.getElementById('resumoPremios').style.display = 'block';
         atualizarDestaques();
     }
 
+    // CORREÇÃO DO CONFERIDOR
     function atualizarDestaques() {
-        const sorteadas = Array.from(document.querySelectorAll('.sorteada'))
-                               .map(i => i.value.padStart(2, '0'))
-                               .filter(v => v !== "00" || (v === "00" && i.value !== ""));
+        // Pega apenas os valores que NÃO estão vazios
+        const inputs = Array.from(document.querySelectorAll('.sorteada'));
+        const sorteadas = inputs
+            .filter(i => i.value.trim() !== "") 
+            .map(i => i.value.trim().padStart(2, '0'));
 
         let totalDuques = 0;
         const cards = document.querySelectorAll('.jogo-card');
 
+        // Se o conferidor estiver vazio, limpa destaques e zera o contador
+        if (sorteadas.length === 0) {
+            cards.forEach(card => card.classList.remove('hit-2'));
+            document.getElementById('resumoPremios').innerHTML = `🏆 TOTAL DE DUQUES PREMIADOS: 0`;
+            return;
+        }
+
         cards.forEach(card => {
             const jogo = card.dataset.dezenas.split(',');
             let acertos = jogo.filter(n => sorteadas.includes(n)).length;
-
             if(acertos >= 2) {
                 card.classList.add('hit-2');
                 totalDuques++;
@@ -331,7 +322,6 @@
                 card.classList.remove('hit-2');
             }
         });
-
         document.getElementById('resumoPremios').innerHTML = `🏆 TOTAL DE DUQUES PREMIADOS: ${totalDuques}`;
     }
 
